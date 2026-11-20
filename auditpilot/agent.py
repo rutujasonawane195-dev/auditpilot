@@ -6,7 +6,9 @@ from auditpilot.agents.report import report_agent
 from auditpilot.agents.risk import risk_agent
 from auditpilot.agents.skeptic import skeptic_loop
 from auditpilot.agents.specialists import specialists
+from auditpilot.callbacks import create_adk_tool_callback
 
+# Attach audit trail callback to audit_lead
 audit_lead = Agent(
     name="audit_lead",
     model="gemini-3.8-flash",
@@ -24,6 +26,7 @@ audit_lead = Agent(
         "Never calculate numbers inside prompts; rely entirely on specialized agents and deterministic code."
     ),
     sub_agents=[intake_agent, specialists, risk_agent, skeptic_loop, report_agent],
+    after_tool_callback=create_adk_tool_callback("audit_lead"),
 )
 
 root_agent = audit_lead
