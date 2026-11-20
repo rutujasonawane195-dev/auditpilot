@@ -9,6 +9,7 @@ from auditpilot.tools.journal_entry import (
     find_weekend_round,
     scan_untrusted_descriptions,
 )
+from auditpilot.tools.policy import parse_policy_clauses, retrieve_policy
 from auditpilot.tools.reconciliation import check_trial_balance, load_ledger
 from auditpilot.tools.vendor import find_ghost_vendors, vendor_bank_overlap
 
@@ -24,4 +25,6 @@ __all__ = [
     "vendor_bank_overlap",
     "scan_untrusted_descriptions",
     "ratio_table",
+    "retrieve_policy",
+    "parse_policy_clauses",
 ]

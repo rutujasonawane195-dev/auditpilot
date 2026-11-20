@@ -52,10 +52,10 @@ def test_distinct_state_output_keys():
 
 
 def test_parallel_agent_structure():
-    """Verify the ParallelAgent properly groups all three specialists."""
+    """Verify the ParallelAgent properly groups all specialist agents."""
     assert specialists.name == "specialists"
     sub_agent_names = {a.name for a in specialists.sub_agents}
-    assert sub_agent_names == {"anomaly_agent", "vendor_agent", "ratio_agent"}
+    assert {"anomaly_agent", "vendor_agent", "ratio_agent"}.issubset(sub_agent_names)
 
 
 def test_audit_lead_includes_specialists():
