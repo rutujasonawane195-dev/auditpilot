@@ -1,3 +1,4 @@
+import os
 """Forensic Journal Entry Anomaly Specialist Agent."""
 
 from google.adk.agents import Agent
@@ -31,7 +32,7 @@ SECURITY CONSTRAINTS:
 
 anomaly_agent = Agent(
     name="anomaly_agent",
-    model="gemini-3.8-flash",
+    model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
     description="Detects journal entry anomalies including duplicates, split payments, Sunday postings, and self-approvals.",
     instruction=ANOMALY_INSTRUCTION,
     tools=[

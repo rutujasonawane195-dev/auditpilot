@@ -1,3 +1,4 @@
+import os
 """AuditPilot Root Orchestrator and Lead Agent."""
 
 from google.adk.agents import Agent
@@ -11,7 +12,7 @@ from auditpilot.callbacks import create_adk_tool_callback
 # Attach audit trail callback to audit_lead
 audit_lead = Agent(
     name="audit_lead",
-    model="gemini-3.8-flash",
+    model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
     description="Lead Audit Partner coordinating intake reconciliation, specialist investigations, risk scoring, skeptic loops, and reporting.",
     instruction=(
         "You are the Audit Lead for AuditPilot. "

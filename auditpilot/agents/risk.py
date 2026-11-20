@@ -1,3 +1,4 @@
+import os
 """Risk Scoring and Ranking Agent."""
 
 from typing import Any, Dict, List
@@ -65,7 +66,7 @@ MANDATORY RULES:
 
 risk_agent = Agent(
     name="risk_agent",
-    model="gemini-3.8-flash",
+    model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
     description="Consolidates findings from all specialists, assigns likelihood and impact per audit rubric, and outputs ranked findings.",
     instruction=RISK_INSTRUCTION,
     output_key="ranked_findings",

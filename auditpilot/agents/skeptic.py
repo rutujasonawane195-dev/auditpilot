@@ -1,3 +1,4 @@
+import os
 """Skeptic Agent and Professional Skepticism Loop."""
 
 from typing import Any, Dict, List, Tuple
@@ -71,7 +72,7 @@ The skeptic review repeats up to 3 rounds until no findings remain in `needs_evi
 
 skeptic_agent = Agent(
     name="skeptic_agent",
-    model="gemini-3.8-flash",
+    model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
     description="Adversarial auditor that verifies transaction evidence, challenges claims, and filters hallucinated findings.",
     instruction=SKEPTIC_INSTRUCTION,
     tools=[verify_entry_ids],

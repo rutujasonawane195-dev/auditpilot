@@ -1,3 +1,4 @@
+import os
 """Policy Compliance and RAG Retrieval Specialist Agent."""
 
 from google.adk.agents import Agent
@@ -27,7 +28,7 @@ MANDATORY EVIDENCE CONSTRAINTS:
 
 policy_agent = Agent(
     name="policy_agent",
-    model="gemini-3.8-flash",
+    model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
     description="Cross-examines transactions against the corporate financial approval policy using TF-IDF clause retrieval.",
     instruction=POLICY_INSTRUCTION,
     tools=[

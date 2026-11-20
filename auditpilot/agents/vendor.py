@@ -1,3 +1,4 @@
+import os
 """Vendor Integrity and KYC Specialist Agent."""
 
 from google.adk.agents import Agent
@@ -19,7 +20,7 @@ AUDIT CONSTRAINTS:
 
 vendor_agent = Agent(
     name="vendor_agent",
-    model="gemini-3.8-flash",
+    model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
     description="Audits vendor master data for ghost vendors lacking tax IDs and employee-vendor bank account collisions.",
     instruction=VENDOR_INSTRUCTION,
     tools=[

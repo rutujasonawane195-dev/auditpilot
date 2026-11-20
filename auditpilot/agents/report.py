@@ -1,3 +1,4 @@
+import os
 """Audit Memorandum Reporting and Sign-Off Agent."""
 
 from google.adk.agents import Agent
@@ -20,7 +21,7 @@ CRITICAL CONSTRAINTS:
 
 report_agent = Agent(
     name="report_agent",
-    model="gemini-3.8-flash",
+    model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
     description="Synthesizes confirmed findings into an executive audit memorandum (DRAFT) and facilitates human sign-off (FINAL).",
     instruction=REPORT_INSTRUCTION,
     tools=[generate_audit_memo, approve_audit_memo],

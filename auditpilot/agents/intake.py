@@ -1,3 +1,4 @@
+import os
 """Intake Agent for AuditPilot.
 
 Validates ledger structure and reconciles trial balance debits vs credits.
@@ -30,7 +31,7 @@ CRITICAL RULES:
 
 intake_agent = Agent(
     name="intake_agent",
-    model="gemini-3.8-flash",
+    model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
     description="Validates ledger structure and reconciles trial balance before specialist audit analysis.",
     instruction=INTAKE_INSTRUCTION,
     tools=[load_ledger, check_trial_balance],

@@ -1,3 +1,4 @@
+import os
 """Financial Ratios and Variance Specialist Agent."""
 
 from google.adk.agents import Agent
@@ -21,7 +22,7 @@ AUDIT CONSTRAINTS:
 
 ratio_agent = Agent(
     name="ratio_agent",
-    model="gemini-3.8-flash",
+    model=os.environ.get("GEMINI_MODEL", "gemini-3.8-flash"),
     description="Computes financial statement ratios (liquidity, profitability, leverage) and identifies anomalous reporting periods.",
     instruction=RATIO_INSTRUCTION,
     tools=[ratio_table],

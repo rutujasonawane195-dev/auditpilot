@@ -19,6 +19,7 @@ htmlcov/
 
 # ADK runtime / state files
 .adk/
+audit_trail.jsonl
 
 # OS / Editor files
 .DS_Store
