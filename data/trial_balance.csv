@@ -1,0 +1,17 @@
+account,debit,credit
+1001 Cash & Bank Balances,85000000.0,0.0
+1002 Accounts Receivable,42000000.0,0.0
+1003 Inventories,38000000.0,0.0
+2001 Accounts Payable,0.0,55000000.0
+2003 Short-Term Borrowings,0.0,30000000.0
+3001 Share Capital,0.0,50000000.0
+4001 Revenue from Operations,0.0,150000000.0
+5001 Cost of Materials Consumed,17870208.18,0.0
+6001 Employee Benefit Expenses,17590371.71,0.0
+6002 Rent & Utilities Expense,18895209.03,0.0
+6003 IT & Cloud Infrastructure,18977462.67,0.0
+6004 Legal & Professional Fees,20513959.57,0.0
+6005 Marketing & Business Promotion,19597399.51,0.0
+6006 Repairs & Maintenance,23103767.81,0.0
+6007 Travel & Conveyance,18303923.04,0.0
+3002 Retained Earnings,0.0,34802301.52

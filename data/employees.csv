@@ -1,0 +1,41 @@
+emp_id,name,bank_account,role
+EMP001,Amit Mishra,910049499059,Procurement Lead
+EMP002,Shweta Verma,910072763121,Accounts Manager
+EMP003,Amit Joshi,910097806010,CFO
+EMP004,Tanvi Kumar,910080745786,Procurement Lead
+EMP005,Ananya Agarwal,910050534733,Procurement Lead
+EMP006,Nitin Gupta,910093408848,CFO
+EMP007,Sanjay Nair,910084048544,Procurement Lead
+EMP008,Pranav Deshmukh,910030451484,Finance Associate
+EMP009,Ravi Bhat,910015743552,Finance Director
+EMP010,Vikram Rao,910066849795,Accounts Manager
+EMP011,Tanvi Kumar,910041907336,Finance Associate
+EMP012,Preeti Nair,910090380900,Internal Auditor
+EMP013,Varun Mishra,910027517483,Senior Accountant
+EMP014,Priya Deshmukh,910013942338,Procurement Lead
+EMP015,Arjun Kumar,910071474405,Finance Director
+EMP016,Tanvi Mehta,910097075874,Senior Accountant
+EMP017,Manish Kulkarni,910043341373,Finance Associate
+EMP018,Priya Mishra,910027052422,Procurement Lead
+EMP019,Ananya Singh,910052813442,Senior Accountant
+EMP020,Divya Bose,910070283258,Finance Director
+EMP021,Pranav Gupta,910084941036,Internal Auditor
+EMP022,Sunil Verma,910038112997,CFO
+EMP023,Vikram Nair,910082428791,CFO
+EMP024,Nitin Bhat,910035949529,Accounts Manager
+EMP025,Sneha Chatterjee,910022577723,CFO
+EMP026,Deepak Agarwal,910010662604,CFO
+EMP027,Varun Mishra,910069836576,Procurement Lead
+EMP028,Sunil Rao,910060008225,Procurement Lead
+EMP029,Rahul Bose,910013353608,Finance Associate
+EMP030,Ishaan Patel,910049565221,Internal Auditor
+EMP031,Sanjay Deshmukh,910086957199,Procurement Lead
+EMP032,Amit Mishra,910061714055,Internal Auditor
+EMP033,Ravi Bose,910018150978,Procurement Lead
+EMP034,Varun Reddy,910064255441,Finance Associate
+EMP035,Neha Nair,910098446454,Accounts Manager
+EMP036,Kavita Nair,910099339904,CFO
+EMP037,Aditi Iyer,910083950699,Finance Associate
+EMP038,Shweta Rao,910092588690,Senior Accountant
+EMP039,Pranav Singh,910021365266,Procurement Lead
+EMP040,Rahul Mishra,910099649620,Internal Auditor
