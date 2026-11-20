@@ -49,7 +49,8 @@ class Finding(BaseModel):
     rationale: str = Field(default="", description="Auditor narrative and risk explanation")
     description: str = Field(default="", description="Alias for rationale")
     recommendation: Optional[str] = Field(default="", description="Remediation guidance")
-    status: Literal["open", "confirmed", "dropped"] = Field(default="open", description="Finding lifecycle status")
+    dropped_reason: Optional[str] = Field(default="", description="Auditor rationale for dropping or dismissing a finding")
+    status: Literal["open", "confirmed", "needs_evidence", "dropped"] = Field(default="open", description="Finding lifecycle status")
 
     @field_validator("entry_ids")
     @classmethod

@@ -5,6 +5,11 @@ from auditpilot.agents.intake import evaluate_intake, intake_agent
 from auditpilot.agents.policy import policy_agent
 from auditpilot.agents.ratio import ratio_agent
 from auditpilot.agents.risk import risk_agent, score_and_rank_findings
+from auditpilot.agents.skeptic import (
+    review_and_filter_findings,
+    skeptic_agent,
+    skeptic_loop,
+)
 from auditpilot.agents.specialists import specialists
 from auditpilot.agents.vendor import vendor_agent
 
@@ -18,4 +23,7 @@ __all__ = [
     "specialists",
     "risk_agent",
     "score_and_rank_findings",
+    "skeptic_agent",
+    "skeptic_loop",
+    "review_and_filter_findings",
 ]

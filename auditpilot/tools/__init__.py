@@ -12,6 +12,7 @@ from auditpilot.tools.journal_entry import (
 from auditpilot.tools.policy import parse_policy_clauses, retrieve_policy
 from auditpilot.tools.reconciliation import check_trial_balance, load_ledger
 from auditpilot.tools.vendor import find_ghost_vendors, vendor_bank_overlap
+from auditpilot.tools.verification import verify_entry_ids
 
 __all__ = [
     "load_ledger",
@@ -27,4 +28,5 @@ __all__ = [
     "ratio_table",
     "retrieve_policy",
     "parse_policy_clauses",
+    "verify_entry_ids",
 ]
