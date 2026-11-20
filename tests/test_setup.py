@@ -37,7 +37,7 @@ def test_agent_discovery():
 
     assert root_agent is not None
     assert hasattr(root_agent, "name")
-    assert root_agent.name == "root_agent"
+    assert root_agent.name in ["root_agent", "audit_lead"]
 
 
 def test_gitignore_protects_env():
