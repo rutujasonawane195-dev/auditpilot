@@ -2,7 +2,7 @@
 
 from enum import Enum
 from typing import Any, Dict, List, Literal, Optional
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator, model_validator
 
 
 class FindingSeverity(str, Enum):
@@ -21,6 +21,7 @@ class FindingCategory(str, Enum):
     RECONCILIATION = "reconciliation"
     JOURNAL_ENTRY = "journal_entry"
     VENDOR_INTEGRITY = "vendor_integrity"
+    POLICY_COMPLIANCE = "policy_compliance"
     FINANCIAL_ANALYSIS = "financial_analysis"
     SECURITY = "security"
 
@@ -28,19 +29,87 @@ class FindingCategory(str, Enum):
 class Finding(BaseModel):
     """Standardized finding model citing entry_ids as evidence.
 
-    Adheres to AuditPilot internal rule:
-    'Every finding must cite entry_ids as evidence.'
+    Enforces:
+    1. 'Every finding must cite entry_ids as evidence' (len >= 1).
+    2. 'Score is computed by code as likelihood * impact' (never in prompt).
     """
 
-    finding_id: str = Field(..., description="Unique finding identifier, e.g. FIND-001")
+    id: str = Field(default="", description="Unique finding ID, e.g. FIND-001")
+    finding_id: str = Field(default="", description="Alias for finding ID")
     title: str = Field(..., description="Short title of the finding")
-    category: FindingCategory = Field(..., description="Audit test category")
-    severity: FindingSeverity = Field(..., description="Finding severity level")
-    description: str = Field(..., description="Auditor narrative and risk rationale")
+    category: str = Field(default="journal_entry", description="Audit test category")
     entry_ids: List[str] = Field(..., description="Cited entry_ids proving the anomaly")
-    amount_inr: float = Field(default=0.0, description="Total monetary exposure in INR")
-    recommendation: Optional[str] = Field(default="", description="Audit remediation advice")
-    evidence: Dict[str, Any] = Field(default_factory=dict, description="Underlying metric evidence")
+    evidence: Dict[str, Any] = Field(default_factory=dict, description="Underlying metric evidence and citations")
+    amount_at_risk_inr: float = Field(default=0.0, description="Total monetary exposure in INR")
+    amount_inr: float = Field(default=0.0, description="Alias for amount_at_risk_inr")
+    likelihood: int = Field(default=1, ge=1, le=5, description="Likelihood score (1-5)")
+    impact: int = Field(default=1, ge=1, le=5, description="Impact score (1-5)")
+    score: int = Field(default=1, description="Computed risk score: likelihood * impact (1-25)")
+    severity: FindingSeverity | str = Field(default=FindingSeverity.LOW, description="Risk tier: LOW, MEDIUM, HIGH, CRITICAL")
+    rationale: str = Field(default="", description="Auditor narrative and risk explanation")
+    description: str = Field(default="", description="Alias for rationale")
+    recommendation: Optional[str] = Field(default="", description="Remediation guidance")
+    status: Literal["open", "confirmed", "dropped"] = Field(default="open", description="Finding lifecycle status")
+
+    @field_validator("entry_ids")
+    @classmethod
+    def validate_entry_ids_not_empty(cls, v: List[str]) -> List[str]:
+        if not v or len(v) == 0:
+            raise ValueError("Every finding must cite at least one entry_id as concrete evidence.")
+        return v
+
+    @model_validator(mode="after")
+    def compute_scores_and_sync_aliases(self) -> "Finding":
+        # Synchronize ID aliases
+        if self.finding_id and not self.id:
+            self.id = self.finding_id
+        elif self.id and not self.finding_id:
+            self.finding_id = self.id
+        elif not self.id and not self.finding_id:
+            self.id = "FIND-UNSET"
+            self.finding_id = "FIND-UNSET"
+
+        # Synchronize amounts
+        if self.amount_at_risk_inr == 0.0 and self.amount_inr > 0.0:
+            self.amount_at_risk_inr = self.amount_inr
+        elif self.amount_inr == 0.0 and self.amount_at_risk_inr > 0.0:
+            self.amount_inr = self.amount_at_risk_inr
+
+        # Synchronize rationale/description
+        if not self.rationale and self.description:
+            self.rationale = self.description
+        elif not self.description and self.rationale:
+            self.description = self.rationale
+
+        # Code computes score: likelihood * impact (1 to 25)
+        self.score = int(self.likelihood * self.impact)
+
+        # Assign severity based on standard heat-map tiers if not explicitly provided
+        if self.likelihood > 1 or self.impact > 1 or self.severity == FindingSeverity.LOW:
+            if self.score >= 20:
+                self.severity = FindingSeverity.CRITICAL
+            elif self.score >= 15:
+                self.severity = FindingSeverity.HIGH
+            elif self.score >= 8:
+                self.severity = FindingSeverity.MEDIUM
+            else:
+                self.severity = FindingSeverity.LOW
+        elif isinstance(self.severity, str):
+            try:
+                self.severity = FindingSeverity(self.severity)
+            except ValueError:
+                pass
+
+        return self
+
+
+class RankedFindings(BaseModel):
+    """Container model holding ordered audit findings sorted by score descending."""
+
+    findings: List[Finding] = Field(default_factory=list, description="Ordered list of findings")
+    total_findings: int = Field(default=0, description="Total count of findings")
+    total_exposure_inr: float = Field(default=0.0, description="Aggregated exposure amount in INR")
+    highest_score: int = Field(default=0, description="Maximum risk score across all findings")
 
 
 class AuditToolResult(BaseModel):
