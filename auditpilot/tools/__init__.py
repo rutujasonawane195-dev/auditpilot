@@ -1,8 +1,4 @@
-"""AuditPilot Tools Package.
-
-Deterministic auditing routines for general ledger integrity,
-vendor KYC verification, reconciliation, and financial analytics.
-"""
+"""AuditPilot Deterministic Audit Tools Package."""
 
 from auditpilot.tools.financial import ratio_table
 from auditpilot.tools.journal_entry import (
@@ -24,8 +20,8 @@ __all__ = [
     "find_split_payments",
     "find_weekend_round",
     "check_approval_limits",
-    "scan_untrusted_descriptions",
     "find_ghost_vendors",
     "vendor_bank_overlap",
+    "scan_untrusted_descriptions",
     "ratio_table",
 ]
