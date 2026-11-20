@@ -1,7 +1,9 @@
 """Test Phase 0 setup and environment readiness."""
 import importlib
+import shutil
 import subprocess
 from pathlib import Path
+import pytest
 
 
 def test_core_dependencies():
@@ -26,7 +28,11 @@ def test_directory_structure():
         "docs",
         ".agent/rules",
     ]
+    is_container = not (repo_root / ".git").is_dir()
     for d in expected_dirs:
+        if d == ".agent/rules" and is_container:
+            # .agent is excluded by .dockerignore when packaged into container
+            continue
         dir_path = repo_root / d
         assert dir_path.is_dir(), f"Expected directory {d} does not exist"
 
@@ -43,6 +49,9 @@ def test_agent_discovery():
 def test_gitignore_protects_env():
     """Verify that .env files are ignored by git."""
     repo_root = Path(__file__).resolve().parent.parent
+    if shutil.which("git") is None or not (repo_root / ".git").is_dir():
+        pytest.skip("Git repository not present (running inside production container)")
+
     result = subprocess.run(
         ["git", "status", "--porcelain"],
         cwd=repo_root,
