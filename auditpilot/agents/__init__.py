@@ -4,6 +4,7 @@ from auditpilot.agents.anomaly import anomaly_agent
 from auditpilot.agents.intake import evaluate_intake, intake_agent
 from auditpilot.agents.policy import policy_agent
 from auditpilot.agents.ratio import ratio_agent
+from auditpilot.agents.report import report_agent
 from auditpilot.agents.risk import risk_agent, score_and_rank_findings
 from auditpilot.agents.skeptic import (
     review_and_filter_findings,
@@ -26,4 +27,5 @@ __all__ = [
     "skeptic_agent",
     "skeptic_loop",
     "review_and_filter_findings",
+    "report_agent",
 ]
