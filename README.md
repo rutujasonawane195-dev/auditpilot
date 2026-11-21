@@ -22,41 +22,120 @@ AuditPilot is an enterprise-grade multi-agent autonomous financial audit copilot
 
 ---
 
-## 🏗️ End-to-End System Architecture
+## 🏗️ System Architecture Diagrams
+
+### 1. Cloud Infrastructure & CI/CD Deployment Architecture
+AuditPilot runs an automated "push-to-deploy" pipeline on AWS. Every change pushed to GitHub is automatically tested, containerized, stored in ECR, and deployed to EC2 via AWS Systems Manager without requiring SSH keys or storing credentials in code.
 
 ```mermaid
 flowchart TD
-    subgraph Local_or_CI ["1. Local Development & CI/CD"]
-        DEV["Developer / Git Push"] --> GITHUB["GitHub Repository"]
-        GITHUB --> JENKINS["Jenkins Automation Server (EC2)"]
-        JENKINS --> DOCKER_BUILD["Docker Build & Test Image"]
-        DOCKER_BUILD --> ECR["Amazon ECR (Numbered Tags + Latest)"]
+    subgraph CI_CD ["1. Continuous Integration & Pipeline (AWS / Jenkins)"]
+        DEV["👨‍💻 Developer / Auditor"] -->|git push| GITHUB["🐙 GitHub Repository"]
+        GITHUB -->|Poll SCM H/2 * * * *| JENKINS["⚙️ Jenkins Server (EC2 t3.medium)"]
+        JENKINS -->|1. Build Image| DOCKER_BUILD["🐳 Docker Build\n(python:3.12-slim)"]
+        DOCKER_BUILD -->|2. Run Tests in Container| PYTEST["🧪 pytest -q\n(61/61 Anomaly Recall)"]
+        PYTEST -->|3. On Success: Push Tags| ECR["📦 Amazon ECR Repository\n(:latest & :$BUILD_NUMBER)"]
+        ECR -->|4. Trigger Deploy| SSM["⚡ AWS Systems Manager\n(ssm:SendCommand)"]
     end
 
-    subgraph AWS_Cloud ["2. Production Cloud Hosting (AWS Mumbai)"]
-        SSM["AWS Systems Manager (ssm:SendCommand)"] --> APP_EC2["App Server (EC2 + Docker)"]
-        ECR -->|Pull Image| APP_EC2
-        SECRETS["AWS Secrets Manager\n(auditpilot/google_api_key)"] -->|Inject Key at Start| APP_EC2
-        APP_EC2 -->|Container Logs| CLOUDWATCH["Amazon CloudWatch Logs"]
+    subgraph Production_App ["2. Production Runtime (AWS EC2 & Docker)"]
+        SSM -->|5. Run /opt/auditpilot/deploy.sh| APP_EC2["🖥️ App Server (EC2 t3.small)"]
+        ECR -->|6. docker pull| APP_EC2
+        SECRETS["🔒 AWS Secrets Manager\n(auditpilot/google_api_key)"] -->|7. Inject Key at Container Boot| APP_EC2
+        APP_EC2 -->|8. Stream Logs| CLOUDWATCH["📊 Amazon CloudWatch Logs\n(/aws/auditpilot)"]
+        CLIENT["🌐 Auditor Browser"] -->|Port 80 Ingress: MY_IP/32 Only| APP_EC2
+    end
+```
+
+---
+
+### 2. Multi-Agent Orchestration DAG (Google ADK)
+The multi-agent core is structured as a hierarchical directed acyclic graph (DAG) coordinated by the Lead Auditor agent with sequential gating, parallel specialist analysis, and an iterative skepticism loop.
+
+```mermaid
+flowchart TD
+    USER["Auditor Prompt: 'start audit'"] --> LEAD["👑 Audit Lead Agent\n(audit_lead)"]
+    
+    subgraph Stage1_Intake ["Stage 1: Intake Gatekeeper"]
+        LEAD --> INTAKE["🚪 Intake Agent\n(intake_agent)"]
+        INTAKE --> T1["🔧 load_ledger()"]
+        INTAKE --> T2["🔧 check_trial_balance()"]
+        T2 --> GATE{"Is Trial Balance\nBalanced?"}
+        GATE -->|No: Gap Detected| HALT["⛔ HALT AUDIT\n(Zero Tolerance for Imbalance)"]
     end
 
-    subgraph ADK_Orchestration ["3. Multi-Agent Audit Lifecycle (Google ADK)"]
-        APP_EC2 --> LEAD["Audit Lead Agent (audit_lead)"]
-        LEAD --> INTAKE["Stage 1: Intake Agent\n(Trial Balance Tie-Out Gate)"]
-        INTAKE -->|Balanced| SPECS["Stage 2: Specialists (ParallelAgent)"]
-        INTAKE -.->|Imbalance Gap| HALT["HALT AUDIT (Zero Tolerated Variance)"]
+    subgraph Stage2_Specialists ["Stage 2: Parallel Specialist Investigations"]
+        GATE -->|Yes: Reconciled| PARALLEL["⚡ specialists (ParallelAgent)"]
         
-        subgraph Parallel_Specialists ["Specialist Agents in Parallel"]
-            SPECS --> ANOMALY["Anomaly Agent\n(Duplicates, Splits, Sundays)"]
-            SPECS --> VENDOR["Vendor Agent\n(Ghost Vendors, Shared Accounts)"]
-            SPECS --> RATIO["Ratio Agent\n(Financial Trends & Metrics)"]
-            SPECS --> POLICY["Policy Agent\n(Cosine Similarity Clause RAG)"]
-        end
+        PARALLEL --> ANOMALY["🔍 Anomaly Agent\n(anomaly_findings)"]
+        ANOMALY --> T_DUP["find_duplicates()"]
+        ANOMALY --> T_SPLIT["find_split_payments()"]
+        ANOMALY --> T_SUN["find_weekend_round()"]
+        ANOMALY --> T_INJ["scan_untrusted_descriptions()"]
+        ANOMALY --> T_BEN["benford_test()"]
 
-        Parallel_Specialists --> RISK["Stage 3: Risk Agent\n(Likelihood x Impact Scoring)"]
-        RISK --> SKEPTIC["Stage 4: Skeptic Loop (LoopAgent)\n(Substantiates Cited entry_ids)"]
-        SKEPTIC --> REPORT["Stage 5: Report Agent\n(Compiles Memorandum into docs/audit_memo.md)"]
-        REPORT --> FINAL["Status: [FINAL - APPROVED]"]
+        PARALLEL --> VENDOR["🏢 Vendor Agent\n(vendor_findings)"]
+        VENDOR --> T_GHOST["find_ghost_vendors()"]
+        VENDOR --> T_BANK["vendor_bank_overlap()"]
+
+        PARALLEL --> RATIO["📈 Ratio Agent\n(ratio_findings)"]
+        RATIO --> T_RATIO["ratio_table()"]
+
+        PARALLEL --> POLICY["📜 Policy Agent\n(policy_findings)"]
+        POLICY --> T_POL["retrieve_policy() (Cosine TF-IDF RAG)"]
+        POLICY --> T_SOD["check_approval_limits()"]
+    end
+
+    subgraph Stage3_Risk ["Stage 3: Deterministic Risk Scoring"]
+        PARALLEL --> RISK["⚖️ Risk Agent\n(score_and_rank_findings)"]
+        RISK --> MATH["Python Calculation:\nScore = Likelihood (1-5) * Impact (1-5)"]
+    end
+
+    subgraph Stage4_Skeptic ["Stage 4: Professional Skepticism Loop"]
+        MATH --> LOOP["🔁 skeptic_loop (LoopAgent, max 3 rounds)"]
+        LOOP --> SKEPTIC["🧐 Skeptic Agent\n(skeptic_agent)"]
+        SKEPTIC --> VERIFY["🔧 verify_entry_ids()"]
+        VERIFY --> SKEP_CHECK{"All cited entry_ids\nsubstantiated in ledger?"}
+        SKEP_CHECK -->|No Evidence| DROP["🗑️ Move to dropped_findings\n(with rationale)"]
+        SKEP_CHECK -->|Evidence Confirmed| KEEP["✅ Confirmed Audit Finding"]
+    end
+
+    subgraph Stage5_Reporting ["Stage 5: Reporting & Human Sign-Off"]
+        KEEP --> REPORT["📝 Report Agent\n(report_agent)"]
+        REPORT --> MEMO_GEN["generate_audit_memo()"]
+        MEMO_GEN --> DRAFT["📄 docs/audit_memo.md\nSTATUS: [DRAFT - PENDING APPROVAL]"]
+        DRAFT --> PARTNER{"Audit Partner\nReview & Sign-Off"}
+        PARTNER -->|approve_audit_memo()| FINAL["🏁 STATUS: [FINAL - APPROVED]"]
+    end
+```
+
+---
+
+### 3. Security, Privacy & Anti-Hallucination Pipeline
+AuditPilot enforces multi-layered guardrails ensuring that raw sensitive banking coordinates never enter model prompts, untrusted text cannot execute prompt injections, and every number is traceable to deterministic code.
+
+```mermaid
+flowchart LR
+    subgraph Ingestion ["1. Data Ingestion & Sanitization"]
+        RAW["Raw Accounting Datasets\n(Ledger, Vendors, Employees)"] --> PII_MASK["🛡️ PII Masker (Regex)\nAccount 9100... -> ****5678"]
+        PII_MASK --> INJ_SCAN["🛡️ Prompt Injection Scanner\nQuarantine malicious instructions"]
+    end
+
+    subgraph Computation ["2. Deterministic Execution"]
+        INJ_SCAN --> CODE["🐍 Python / Pandas / Scikit-Learn Tools\nStrict Zero-Hallucination Compute"]
+        CODE --> CALC_OUT["Deterministic Result Dict:\nflagged_ids, stats, passed"]
+    end
+
+    subgraph Audit_Trail ["3. Cryptographic Logging"]
+        CALC_OUT --> ADK_HOOK["🪝 ADK after_tool_callback"]
+        ADK_HOOK --> HASH["Deterministic SHA-256 Result Hash"]
+        HASH --> AUDIT_LOG["📑 Append-Only audit_trail.jsonl\n(Zero Secret / Key Leaks)"]
+    end
+
+    subgraph LLM_Reasoning ["4. Contextual Synthesis"]
+        CALC_OUT --> GEMINI["🤖 Google Gemini (ADK Runtime)\nReasons over verified tool facts ONLY"]
+        GEMINI --> SKEPTIC_CHECK["🧐 Skeptic Verification Gate"]
+        SKEPTIC_CHECK --> MEMO["Executive Memorandum"]
     end
 ```
 
